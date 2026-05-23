@@ -98,8 +98,21 @@ const layout = (props) =>
         }
         a {
           font-size: 18px;
+          position: relative;
+          &::after {
+            content: '';
+            display: block;
+            height: 2px;
+            background-color: #ec3750;
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+            transform-origin: center;
+          }
           &:hover {
             color: ${theme.colors[hoverColor(props.color)]};
+          }
+          &:hover::after {
+            transform: scaleX(1);
           }
         }
       `
