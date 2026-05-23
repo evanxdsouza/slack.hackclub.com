@@ -7,7 +7,6 @@ import channels from '../channels.json'
 
 import { thousands } from '../lib/members'
 import Footer from '../components/footer'
-import ForceTheme from '../components/force-theme'
 import Nav from '../components/nav'
 import Header from '../components/slack/header'
 import Slides from '../components/slides/Slides'
@@ -142,7 +141,7 @@ const GuideItem = ({ title, children, isOpen, onToggle }) => {
 const Card = ({ children, sx, ...props }) => (
   <Box
     sx={{
-      bg: 'white',
+      bg: 'background',
       borderRadius: '16px',
       p: ['1.5rem', '2rem'],
       boxShadow: 'card',
@@ -221,7 +220,8 @@ const TimelineItem = ({ version, date, children, isLast }) => (
         bg: 'primary',
         backgroundImage:
           'radial-gradient(ellipse farthest-corner at top left, #ff8c37, #ec3750)',
-        border: '4px solid white',
+        border: '4px solid',
+        borderColor: 'background',
         boxShadow: '0 0 0 2px rgba(236, 55, 80, 0.2)',
         flexShrink: 0,
         zIndex: 1,
@@ -409,7 +409,6 @@ const SlackPage = () => {
         description={`The Hack Club Slack is a community of ${thousands}k+ high school hackers around the world. Chat, meet new friends, code together, share your work.`}
         image="https://cloud-n6i5i4zb9-hack-club-bot.vercel.app/02020-07-25_d2dd4egb1th5k71w4uj0abbfkvvtnc01.jpeg"
       />
-      <ForceTheme theme="light" />
       <Nav />
       <Slides isOpen={slidesOpen} onClose={handleSlidesClose} />
       <Header onJoinClick={handleJoinClick} />
