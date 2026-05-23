@@ -120,7 +120,7 @@ const MemberBadge = () => {
   )
 }
 
-const Content = ({ onJoinClick, headingRef }) => (
+const Content = ({ onJoinClick, headingRef, btnRef, onBtnMouseMove, onBtnMouseLeave }) => (
   <Grid
     gap={3}
     pt={[5, '100px']}
@@ -167,8 +167,11 @@ const Content = ({ onJoinClick, headingRef }) => (
         </Text>
         <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Text
+            ref={btnRef}
             as="button"
             onClick={onJoinClick}
+            onMouseMove={onBtnMouseMove}
+            onMouseLeave={onBtnMouseLeave}
             sx={{
               bg: 'red',
               backgroundImage:
@@ -182,12 +185,11 @@ const Content = ({ onJoinClick, headingRef }) => (
               display: 'inline-block',
               position: 'relative',
               overflow: 'hidden',
-              transition: 'all 0.125s ease-in-out',
               border: '2px solid white',
               cursor: 'pointer',
               fontFamily: 'inherit',
+              willChange: 'transform',
               ':hover': {
-                transform: 'scale(1.05)',
                 boxShadow: '0 0 0 2px white',
                 backgroundImage:
                   'radial-gradient(ellipse farthest-corner at bottom right, #ff8c37, #ec3750)'
@@ -247,6 +249,7 @@ const Slack = ({ onJoinClick }) => {
   const prefersMotion = usePrefersMotion()
   const coverRef = useRef(null)
   const headingRef = useRef(null)
+  const btnRef = useRef(null)
 
   useEffect(() => {
     if (!prefersMotion) return
@@ -263,6 +266,27 @@ const Slack = ({ onJoinClick }) => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [prefersMotion])
 
+  const handleBtnMouseMove = prefersMotion
+    ? (e) => {
+        const el = btnRef.current
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        const dx = Math.max(-8, Math.min(8, (e.clientX - (rect.left + rect.width / 2)) * 0.4))
+        const dy = Math.max(-8, Math.min(8, (e.clientY - (rect.top + rect.height / 2)) * 0.4))
+        el.style.transition = 'transform 0.1s ease-out, box-shadow 0.125s ease-in-out'
+        el.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`
+      }
+    : undefined
+
+  const handleBtnMouseLeave = prefersMotion
+    ? () => {
+        const el = btnRef.current
+        if (!el) return
+        el.style.transition = 'transform 0.4s ease, box-shadow 0.125s ease-in-out'
+        el.style.transform = ''
+      }
+    : undefined
+
   if (hasMounted && prefersMotion) {
     return (
       <Box
@@ -271,7 +295,13 @@ const Slack = ({ onJoinClick }) => {
         sx={{ overflow: 'hidden', position: 'relative' }}
       >
         <Cover ref={coverRef} />
-        <Content onJoinClick={onJoinClick} headingRef={headingRef} />
+        <Content
+          onJoinClick={onJoinClick}
+          headingRef={headingRef}
+          btnRef={btnRef}
+          onBtnMouseMove={handleBtnMouseMove}
+          onBtnMouseLeave={handleBtnMouseLeave}
+        />
       </Box>
     )
   } else {
