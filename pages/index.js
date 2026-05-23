@@ -138,29 +138,51 @@ const GuideItem = ({ title, children, isOpen, onToggle }) => {
   )
 }
 
-const Card = ({ children, sx, ...props }) => (
-  <Box
-    sx={{
-      bg: 'background',
-      borderRadius: '16px',
-      p: ['1.5rem', '2rem'],
-      boxShadow: 'card',
-      border: '1px solid',
-      borderColor: 'smoke',
-      borderTop: '6px solid',
-      borderTopColor: 'primary',
-      transition: 'all 0.25s ease-in-out',
-      '&:hover': {
-        boxShadow: 'elevated',
-        transform: 'translateY(-6px)'
-      },
-      ...sx
-    }}
-    {...props}
-  >
-    {children}
-  </Box>
-)
+const Card = ({ children, sx, ...props }) => {
+  const cardRef = useRef(null)
+
+  const handleMouseMove = (e) => {
+    const el = cardRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const rotateY = ((e.clientX - rect.left) / rect.width - 0.5) * 16
+    const rotateX = (0.5 - (e.clientY - rect.top) / rect.height) * 16
+    el.style.transition = 'box-shadow 0.1s ease-out'
+    el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`
+    el.style.boxShadow = '0 20px 60px rgba(236,55,80,0.12)'
+  }
+
+  const handleMouseLeave = () => {
+    const el = cardRef.current
+    if (!el) return
+    el.style.transition = 'all 0.4s ease-in-out'
+    el.style.transform = ''
+    el.style.boxShadow = ''
+  }
+
+  return (
+    <Box
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      sx={{
+        bg: 'background',
+        borderRadius: '16px',
+        p: ['1.5rem', '2rem'],
+        boxShadow: 'card',
+        border: '1px solid',
+        borderColor: 'smoke',
+        borderTop: '6px solid',
+        borderTopColor: 'primary',
+        willChange: 'transform',
+        ...sx
+      }}
+      {...props}
+    >
+      {children}
+    </Box>
+  )
+}
 
 const MakeFigure = (props) => {
   const imgUrl = props.imgUrl

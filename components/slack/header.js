@@ -1,8 +1,10 @@
 /** @jsxImportSource theme-ui */
-import { useState, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Box, Card, Grid, Heading, Text } from 'theme-ui'
 import { keyframes } from '@emotion/react'
 import { getLiveCount, formatted as defaultFormatted } from '../../lib/members'
+import usePrefersMotion from '../../lib/use-prefers-motion'
+import useHasMounted from '../../lib/use-has-mounted'
 
 const float1 = keyframes`
   0%, 100% { transform: translateY(0px); }
@@ -118,7 +120,7 @@ const MemberBadge = () => {
   )
 }
 
-const Content = ({ onJoinClick }) => (
+const Content = ({ onJoinClick, headingRef }) => (
   <Grid
     gap={3}
     pt={[5, '100px']}
@@ -130,7 +132,16 @@ const Content = ({ onJoinClick }) => (
     }}
   >
     <HeroGraphic />
-    <Box sx={{ position: 'relative', zIndex: 1, textShadow: 'text', textAlign: ['center', 'center'] }}>
+    <Box
+      ref={headingRef}
+      sx={{
+        position: 'relative',
+        zIndex: 1,
+        textShadow: 'text',
+        textAlign: ['center', 'center'],
+        willChange: 'transform'
+      }}
+    >
       <MemberBadge />
       <Heading
         as="h1"
@@ -191,8 +202,9 @@ const Content = ({ onJoinClick }) => (
   </Grid>
 )
 
-const Cover = () => (
+const Cover = React.forwardRef((props, ref) => (
   <Box
+    ref={ref}
     sx={{
       position: 'absolute',
       bottom: '-20%',
@@ -204,23 +216,67 @@ const Cover = () => (
       backgroundSize: '100%',
       opacity: 0.75,
       zIndex: 0,
-      filter: 'saturate(0.9) grayscale(0.2)'
+      filter: 'saturate(0.9) grayscale(0.2)',
+      willChange: 'transform'
     }}
   />
-)
+))
+Cover.displayName = 'Cover'
 
-
-const Slack=({onJoinClick})=>(
-  <Box 
-  as="section"
-  id="slack"
-  sx={{
-    position:'relative',
-    overflow:'hidden'
-  }}
+const Static = ({
+  img = 'https://cloud-r4rrjh2z8-hack-club-bot.vercel.app/02020-07-25_a1tcva4ch6mmr6j2cfmcb4e9ync3yhar.png',
+  onJoinClick
+}) => (
+  <Box
+    as="section"
+    id="slack"
+    sx={{
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundImage: `url(${img})`,
+      backgroundSize: 'cover'
+    }}
   >
-    <Cover/>
-    <Content onJoinClick={onJoinClick}/>
+    <Cover />
+    <Content onJoinClick={onJoinClick} />
   </Box>
 )
+
+const Slack = ({ onJoinClick }) => {
+  const hasMounted = useHasMounted()
+  const prefersMotion = usePrefersMotion()
+  const coverRef = useRef(null)
+  const headingRef = useRef(null)
+
+  useEffect(() => {
+    if (!prefersMotion) return
+    const onScroll = () => {
+      const y = window.scrollY
+      if (coverRef.current) {
+        coverRef.current.style.transform = `translateY(${y * 0.25}px)`
+      }
+      if (headingRef.current) {
+        headingRef.current.style.transform = `translateY(${y * -0.08}px)`
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [prefersMotion])
+
+  if (hasMounted && prefersMotion) {
+    return (
+      <Box
+        as="section"
+        id="slack"
+        sx={{ overflow: 'hidden', position: 'relative' }}
+      >
+        <Cover ref={coverRef} />
+        <Content onJoinClick={onJoinClick} headingRef={headingRef} />
+      </Box>
+    )
+  } else {
+    return <Static onJoinClick={onJoinClick} />
+  }
+}
+
 export default Slack
