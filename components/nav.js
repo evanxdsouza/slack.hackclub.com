@@ -103,7 +103,7 @@ const layout = (props) =>
             content: '';
             display: block;
             height: 2px;
-            background-color: #ec3750;
+            background-color: ${theme.colors.primary};
             transform: scaleX(0);
             transition: transform 0.2s ease;
             transform-origin: center;
@@ -224,6 +224,7 @@ function Header({ unfixed, color, bgColor, dark, fixed, ...props }) {
         />
         <Box
           as="button"
+          type="button"
           onClick={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')}
           aria-label="Toggle dark mode"
           sx={{
@@ -235,7 +236,8 @@ function Header({ unfixed, color, bgColor, dark, fixed, ...props }) {
             p: 1,
             ml: 2,
             color: 'inherit',
-            display: ['none', null, 'block']
+            display: ['none', null, 'block'],
+            ':focus-visible': { outline: '2px solid currentColor', outlineOffset: '2px', borderRadius: '4px' }
           }}
         >
           {colorMode === 'dark' ? '☀' : '☾'}
