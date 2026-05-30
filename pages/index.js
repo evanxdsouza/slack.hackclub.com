@@ -3,6 +3,7 @@ import Meta from '@hackclub/meta'
 import Head from 'next/head'
 import { Box, Heading, Text, Link as ThemeLink } from 'theme-ui'
 import { useState, useRef, useCallback } from 'react'
+import usePrefersMotion from '../lib/use-prefers-motion'
 import channels from '../channels.json'
 
 import { thousands } from '../lib/members'
@@ -140,25 +141,42 @@ const GuideItem = ({ title, children, isOpen, onToggle }) => {
 
 const Card = ({ children, sx, ...props }) => {
   const cardRef = useRef(null)
+  const prefersMotion = usePrefersMotion()
+  const rafRef = useRef(null)
+  const pendingRef = useRef(null)
 
-  const handleMouseMove = (e) => {
-    const el = cardRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const rotateY = ((e.clientX - rect.left) / rect.width - 0.5) * 16
-    const rotateX = (0.5 - (e.clientY - rect.top) / rect.height) * 16
-    el.style.transition = 'box-shadow 0.1s ease-out'
-    el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`
-    el.style.boxShadow = '0 20px 60px rgba(236,55,80,0.12)'
-  }
+  const handleMouseMove = prefersMotion
+    ? (e) => {
+        const el = cardRef.current
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        const rotateY = ((e.clientX - rect.left) / rect.width - 0.5) * 16
+        const rotateX = (0.5 - (e.clientY - rect.top) / rect.height) * 16
+        pendingRef.current = { rotateX, rotateY }
+        if (!rafRef.current) {
+          rafRef.current = requestAnimationFrame(() => {
+            const p = pendingRef.current
+            const el = cardRef.current
+            if (el && p) {
+              el.style.transition = 'box-shadow 0.1s ease-out'
+              el.style.transform = `perspective(800px) rotateX(${p.rotateX}deg) rotateY(${p.rotateY}deg) translateY(-6px)`
+              el.style.boxShadow = '0 20px 60px rgba(236,55,80,0.12)'
+            }
+            rafRef.current = null
+          })
+        }
+      }
+    : undefined
 
-  const handleMouseLeave = () => {
-    const el = cardRef.current
-    if (!el) return
-    el.style.transition = 'all 0.4s ease-in-out'
-    el.style.transform = ''
-    el.style.boxShadow = ''
-  }
+  const handleMouseLeave = prefersMotion
+    ? () => {
+        const el = cardRef.current
+        if (!el) return
+        el.style.transition = 'all 0.4s ease-in-out'
+        el.style.transform = ''
+        el.style.boxShadow = ''
+      }
+    : undefined
 
   return (
     <Box

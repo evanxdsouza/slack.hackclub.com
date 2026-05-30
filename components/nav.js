@@ -236,7 +236,7 @@ function Header({ unfixed, color, bgColor, dark, fixed, ...props }) {
             p: 1,
             ml: 2,
             color: 'inherit',
-            display: ['none', null, 'block'],
+            display: 'block',
             ':focus-visible': { outline: '2px solid currentColor', outlineOffset: '2px', borderRadius: '4px' }
           }}
         >

@@ -250,16 +250,24 @@ const Slack = ({ onJoinClick }) => {
   const coverRef = useRef(null)
   const headingRef = useRef(null)
   const btnRef = useRef(null)
+  const scrollRafRef = useRef(null)
+  const scrollYRef = useRef(0)
+  const btnRafRef = useRef(null)
+  const btnPendingRef = useRef(null)
 
   useEffect(() => {
     if (!prefersMotion) return
     const onScroll = () => {
-      const y = window.scrollY
-      if (coverRef.current) {
-        coverRef.current.style.transform = `translateY(${y * 0.25}px)`
-      }
-      if (headingRef.current) {
-        headingRef.current.style.transform = `translateY(${y * -0.08}px)`
+      scrollYRef.current = window.scrollY
+      if (!scrollRafRef.current) {
+        scrollRafRef.current = requestAnimationFrame(() => {
+          const y = scrollYRef.current
+          if (coverRef.current)
+            coverRef.current.style.transform = `translateY(${y * 0.25}px)`
+          if (headingRef.current)
+            headingRef.current.style.transform = `translateY(${y * -0.08}px)`
+          scrollRafRef.current = null
+        })
       }
     }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -273,8 +281,18 @@ const Slack = ({ onJoinClick }) => {
         const rect = el.getBoundingClientRect()
         const dx = Math.max(-8, Math.min(8, (e.clientX - (rect.left + rect.width / 2)) * 0.4))
         const dy = Math.max(-8, Math.min(8, (e.clientY - (rect.top + rect.height / 2)) * 0.4))
-        el.style.transition = 'transform 0.1s ease-out, box-shadow 0.125s ease-in-out'
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`
+        btnPendingRef.current = { dx, dy }
+        if (!btnRafRef.current) {
+          btnRafRef.current = requestAnimationFrame(() => {
+            const pending = btnPendingRef.current
+            const btn = btnRef.current
+            if (btn && pending) {
+              btn.style.transition = 'transform 0.1s ease-out, box-shadow 0.125s ease-in-out'
+              btn.style.transform = `translate(${pending.dx}px, ${pending.dy}px) scale(1.05)`
+            }
+            btnRafRef.current = null
+          })
+        }
       }
     : undefined
 
